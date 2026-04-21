@@ -4,7 +4,7 @@ import './App.css'; // Mantenha isso caso hajam estilos base globais necessário
 
 function App() {
   return (
-    <div className="relative w-full min-h-screen overflow-hidden bg-slate-50">
+    <div className="relative w-full min-h-screen overflow-x-hidden bg-slate-50">
       <FallingPetals />
       
       {/* Container principal para o conteúdo por cima dos efeitos de fundo */}

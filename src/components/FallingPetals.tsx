@@ -39,7 +39,7 @@ export const FallingPetals = () => {
   }, []);
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
       {petals.map((petal) => (
         <motion.div
           key={petal.id}
