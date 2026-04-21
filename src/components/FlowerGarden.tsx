@@ -1,7 +1,59 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Flower } from './Flower';
 import { messages } from '../data/messages';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Componente para a explosão final de "confetes" em forma de pétalas azuis
+const PetalExplosion = () => {
+  const COLORS = ['#DBEAFE', '#E0F2FE', '#BAE6FD', '#BFDBFE'];
+  
+  // Gerando os valores aleatórios no useMemo uma só vez pra não recriar do zero em re-renders isolados
+  const petals = useMemo(() => {
+    return Array.from({ length: 40 }).map((_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = 80 + Math.random() * 200; // força da explosão
+      return {
+        id: i,
+        x: Math.cos(angle) * velocity,
+        y: Math.sin(angle) * velocity,
+        rotation: Math.random() * 360,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        size: Math.random() * 10 + 8, // tamanhos variados entre 8px e 18px
+        duration: 1.5 + Math.random() * 1.5,
+      };
+    });
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center">
+      {petals.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute shadow-sm"
+          style={{
+            width: p.size,
+            height: p.size * 1.5,
+            backgroundColor: p.color,
+            borderBottomRightRadius: '50% 100%',
+            borderTopLeftRadius: '50% 100%',
+          }}
+          initial={{ scale: 0, x: 0, y: 0, opacity: 1, rotate: 0 }}
+          animate={{
+            scale: [0, 1, 0.5],
+            x: [0, p.x],
+            y: [0, p.y + (Math.random() * 50)], // Dá uma certa gravidade à queda
+            rotate: p.rotation,
+            opacity: [1, 1, 0],
+          }}
+          transition={{
+            duration: p.duration,
+            ease: "easeOut"
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 export const FlowerGarden = () => {
   const [openedCount, setOpenedCount] = useState(0);
@@ -27,7 +79,7 @@ export const FlowerGarden = () => {
     <div className="flex flex-col items-center mt-12 md:mt-20 w-full px-6 pb-32">
       <AnimatePresence mode="popLayout">
         {visibleMessages.map((msg, index) => (
-          <div key={msg.id} className="flex flex-col items-center w-full">
+          <div key={msg.id} className="flex flex-col items-center w-full relative">
             
             {/* O Caminho de Pontinhos Animados (aparece depois do primeiro, por baixo da flor) */}
             {index > 0 && (
@@ -56,22 +108,16 @@ export const FlowerGarden = () => {
                 cardColor={msg.cardColor}
                 onOpen={handleOpen}
               />
+              
+              {/* Confete de pétalas azuis se for a última flor sendo aberta */}
+              {openedCount === messages.length && index === messages.length - 1 && (
+                <PetalExplosion />
+              )}
             </motion.div>
           </div>
         ))}
       </AnimatePresence>
       
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
-        className="mt-16 md:mt-24 text-slate-400 font-serif text-xs md:text-sm tracking-[0.2em] uppercase text-center"
-      >
-        {openedCount === messages.length 
-          ? "Todas as sementes floresceram" 
-          : `${openedCount} de ${messages.length} lidas`}
-      </motion.div>
-
       {/* Referência invisível no fundo pra ajudar no scroll em telas menores */}
       <div ref={bottomRef} className="h-8 w-full" />
     </div>
